@@ -102,5 +102,5 @@ EXPOSE 10000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:10000/health || exit 1
 
-# Start PHP-FPM and Nginx
-CMD ["sh", "-c", "php-fpm & nginx -g 'daemon off;'"]
+# Start PHP-FPM first so container startup fails if PHP cannot serve Laravel.
+CMD ["sh", "-c", "php-fpm -D && exec nginx -g 'daemon off;'"]
