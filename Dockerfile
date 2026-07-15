@@ -1,5 +1,5 @@
 # Multi-stage build for Laravel application
-FROM php:8.2-fpm-alpine AS builder
+FROM php:8.4-fpm-alpine AS builder
 
 # Install system dependencies
 RUN apk add --no-cache \
@@ -41,11 +41,14 @@ WORKDIR /app
 # Copy composer files
 COPY composer.json composer.lock* ./
 
-# Install PHP dependencies
-RUN composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
+# Install PHP dependencies without Laravel scripts until the app files exist.
+RUN composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader --no-scripts
 
 # Copy application files
 COPY . .
+
+# Run Laravel's Composer scripts now that artisan and the app are available.
+RUN composer dump-autoload --optimize
 
 # Copy package files
 COPY package.json package-lock.json* ./
@@ -58,7 +61,7 @@ RUN mkdir -p storage/logs storage/framework/cache storage/framework/sessions && 
     chmod -R 775 storage bootstrap/cache
 
 # Production stage
-FROM php:8.2-fpm-alpine
+FROM php:8.4-fpm-alpine
 
 # Install runtime dependencies only
 RUN apk add --no-cache \
