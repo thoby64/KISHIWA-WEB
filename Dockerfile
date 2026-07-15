@@ -72,7 +72,8 @@ RUN apk add --no-cache \
     postgresql-libs \
     sqlite-libs \
     curl \
-    nginx
+    nginx \
+    gettext
 
 # Copy PHP extensions from builder stage
 COPY --from=builder /usr/local/lib/php/extensions /usr/local/lib/php/extensions
