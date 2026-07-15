@@ -1,0 +1,100 @@
+services:
+  # Main Web Service
+  - type: web
+    name: kishiwa-school-website
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    region: oregon
+    plan: starter
+    
+    # Environment variables
+    envVars:
+      - key: APP_NAME
+        value: "Kishiwa School"
+      - key: APP_ENV
+        value: "production"
+      - key: APP_DEBUG
+        value: "false"
+      - key: APP_URL
+        scope: common
+        sync: false
+      - key: APP_KEY
+        sync: false
+      - key: DB_CONNECTION
+        value: "pgsql"
+      - key: DB_HOST
+        fromDatabase:
+          name: kishiwa-db
+          property: host
+      - key: DB_PORT
+        value: "5432"
+      - key: DB_DATABASE
+        fromDatabase:
+          name: kishiwa-db
+          property: name
+      - key: DB_USERNAME
+        fromDatabase:
+          name: kishiwa-db
+          property: username
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: kishiwa-db
+          property: password
+      - key: CACHE_DRIVER
+        value: "file"
+      - key: QUEUE_CONNECTION
+        value: "database"
+      - key: SESSION_DRIVER
+        value: "file"
+      - key: MAIL_MAILER
+        value: "smtp"
+      - key: MAIL_HOST
+        value: "smtp.mailtrap.io"
+      - key: MAIL_PORT
+        value: "2525"
+      - key: MAIL_USERNAME
+        sync: false
+      - key: MAIL_PASSWORD
+        sync: false
+      - key: MAIL_FROM_ADDRESS
+        value: "noreply@kishiwraschool.com"
+      - key: MAIL_FROM_NAME
+        value: "Kishiwa School"
+    
+    # Build command
+    buildCommand: "docker build -t kishiwa-school-website ."
+    
+    # Start command (handled by Dockerfile CMD)
+    # The Dockerfile CMD will start both PHP-FPM and Nginx
+    
+    # Health check path
+    healthCheckPath: /health
+    
+    # Scaling
+    numInstances: 1
+    
+    # Auto-deploy from GitHub
+    autoDeploy: true
+
+  # PostgreSQL Database
+  - type: pserv
+    name: kishiwa-db
+    runtime: postgresql15
+    region: oregon
+    plan: starter
+    
+    # Database configuration
+    databaseName: kishiwa_school
+    user: postgres
+    
+    # Backup configuration
+    backupRetention: 7
+
+# Cron Jobs (Optional - for scheduled tasks)
+crons:
+  - id: laravel-schedule
+    service:
+      type: web
+      name: kishiwa-school-website
+    schedule: "* * * * *"  # Every minute
+    command: "/usr/bin/env php /app/artisan schedule:run >> /dev/null 2>&1"
