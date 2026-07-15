@@ -82,8 +82,12 @@ COPY --from=builder /usr/local/etc/php/conf.d /usr/local/etc/php/conf.d
 COPY --chown=www-data:www-data docker/php-fpm.conf /usr/local/etc/php-fpm.d/www.conf
 COPY --chown=www-data:www-data docker/php.ini /usr/local/etc/php/conf.d/php.ini
 
-# Copy Nginx configuration
-COPY --chown=www-data:www-data docker/nginx.conf /etc/nginx/nginx.conf
+# Copy Nginx configuration template
+COPY --chown=www-data:www-data docker/nginx.conf.template /etc/nginx/nginx.conf.template
+
+# Copy start script
+COPY --chown=www-data:www-data docker/start.sh /usr/local/bin/start.sh
+RUN chmod +x /usr/local/bin/start.sh
 
 # Set working directory
 WORKDIR /app
@@ -95,12 +99,12 @@ COPY --from=builder --chown=www-data:www-data /app /app
 RUN mkdir -p storage/logs storage/framework/cache storage/framework/sessions && \
     chown -R www-data:www-data storage bootstrap/cache public
 
-# Expose port
+# Expose default port (Render provides $PORT at runtime)
 EXPOSE 10000
 
-# Health check
+# Health check (shell form so $PORT expands)
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:10000/health || exit 1
+  CMD sh -c "curl -f http://localhost:${PORT:-10000}/health || exit 1"
 
-# Start PHP-FPM first so container startup fails if PHP cannot serve Laravel.
-CMD ["sh", "-c", "php-fpm -D && exec nginx -g 'daemon off;'"]
+# Use start script to substitute config and run services
+CMD ["/usr/local/bin/start.sh"]
