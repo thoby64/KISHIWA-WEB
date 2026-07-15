@@ -30,7 +30,7 @@ RUN docker-php-ext-configure gd --with-jpeg --with-webp && \
     opcache \
     bcmath \
     ctype \
-    fileinfo \
+    fileinfo
 
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
