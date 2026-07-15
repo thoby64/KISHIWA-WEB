@@ -68,7 +68,6 @@ RUN apk add --no-cache \
     libwebp \
     libzip \
     postgresql-libs \
-    mysql-libs \
     sqlite-libs \
     curl \
     nginx
