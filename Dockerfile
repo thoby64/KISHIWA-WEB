@@ -72,20 +72,9 @@ RUN apk add --no-cache \
     curl \
     nginx
 
-# Install PHP extensions (runtime only)
-RUN docker-php-ext-configure gd --with-jpeg --with-webp && \
-    docker-php-ext-install -j$(nproc) \
-    gd \
-    mbstring \
-    zip \
-    pdo \
-    pdo_mysql \
-    pdo_pgsql \
-    opcache \
-    bcmath \
-    ctype \
-    fileinfo \
-    json
+# Copy PHP extensions from builder stage
+COPY --from=builder /usr/local/lib/php/extensions /usr/local/lib/php/extensions
+COPY --from=builder /usr/local/etc/php/conf.d /usr/local/etc/php/conf.d
 
 # Copy PHP-FPM configuration
 COPY --chown=www-data:www-data docker/php-fpm.conf /usr/local/etc/php-fpm.d/www.conf
