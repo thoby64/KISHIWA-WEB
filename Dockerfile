@@ -20,7 +20,7 @@ RUN apk add --no-cache \
 
 # Install PHP extensions
 RUN docker-php-ext-configure gd --with-jpeg --with-webp && \
-    docker-php-ext-install -j$(nproc) \
+    docker-php-ext-install \
     gd \
     mbstring \
     zip \
@@ -31,7 +31,6 @@ RUN docker-php-ext-configure gd --with-jpeg --with-webp && \
     bcmath \
     ctype \
     fileinfo \
-    json
 
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
